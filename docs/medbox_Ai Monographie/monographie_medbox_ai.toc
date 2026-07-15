@@ -1,0 +1,44 @@
+\babel@toc {french}{}\relax 
+\contentsline {chapter}{Résumé}{1}{chapter*.1}%
+\contentsline {chapter}{\numberline {1}Introduction générale}{4}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Contexte}{4}{section.1.1}%
+\contentsline {section}{\numberline {1.2}Problématique}{4}{section.1.2}%
+\contentsline {section}{\numberline {1.3}Objectifs}{5}{section.1.3}%
+\contentsline {subsection}{\numberline {1.3.1}Objectif général}{5}{subsection.1.3.1}%
+\contentsline {subsection}{\numberline {1.3.2}Objectifs spécifiques}{5}{subsection.1.3.2}%
+\contentsline {section}{\numberline {1.4}Méthodologie adoptée}{5}{section.1.4}%
+\contentsline {section}{\numberline {1.5}Structure du document}{6}{section.1.5}%
+\contentsline {chapter}{\numberline {2}Cadre théorique et technologique}{7}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Définitions des concepts clés}{7}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Présentation des outils ou technologies utilisés}{8}{section.2.2}%
+\contentsline {chapter}{\numberline {3}Réalisation du projet}{9}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Analyse des besoins}{9}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Architecture de la solution}{9}{section.3.2}%
+\contentsline {section}{\numberline {3.3}Étapes de mise en œuvre}{10}{section.3.3}%
+\contentsline {paragraph}{Entraînement du modèle d'intelligence artificielle.}{11}{section.3.3}%
+\contentsline {paragraph}{Conversion pour l'embarqué.}{11}{section.3.3}%
+\contentsline {paragraph}{Développement du firmware embarqué.}{11}{section.3.3}%
+\contentsline {section}{\numberline {3.4}Résultats obtenus}{12}{section.3.4}%
+\contentsline {chapter}{\numberline {4}Difficultés rencontrées et limites}{14}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Difficultés rencontrées}{14}{section.4.1}%
+\contentsline {paragraph}{Authentification manquante en lecture NFC.}{14}{section.4.1}%
+\contentsline {paragraph}{Incohérence de format entre écriture et lecture NFC.}{14}{section.4.1}%
+\contentsline {paragraph}{Calibration insuffisante du capteur de température.}{14}{section.4.1}%
+\contentsline {paragraph}{Absence de retour visuel après le scan du badge.}{14}{section.4.1}%
+\contentsline {paragraph}{Crash mémoire lors de l'agrandissement de la fenêtre de capture cardiaque.}{15}{section.4.1}%
+\contentsline {paragraph}{Contention du bus I2C pendant la capture cardiaque.}{15}{section.4.1}%
+\contentsline {paragraph}{Instabilité persistante des mesures cardiaques.}{15}{section.4.1}%
+\contentsline {paragraph}{Séparation du firmware d'écriture des badges.}{15}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Limites de la solution}{15}{section.4.2}%
+\contentsline {chapter}{\numberline {5}Conclusion générale}{17}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Récapitulatif}{17}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Apports du projet}{17}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Perspectives}{17}{section.5.3}%
+\contentsline {chapter}{\numberline {6}Bibliographie et Webographie}{19}{chapter.6}%
+\contentsline {section}{Bibliographie}{19}{section*.3}%
+\contentsline {chapter}{\numberline {7}Annexes}{21}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Annexe 1 -- Extrait du code d'inférence embarquée}{21}{section.7.1}%
+\contentsline {section}{\numberline {7.2}Annexe 2 -- Extrait de la correction de lecture NFC (authentification)}{22}{section.7.2}%
+\contentsline {section}{\numberline {7.3}Annexe 3 -- Architecture du modèle (Python/Keras)}{22}{section.7.3}%
+\contentsline {section}{\numberline {7.4}Annexe 4 -- Liste des 19 classes diagnostiquées}{23}{section.7.4}%
+\contentsline {section}{\numberline {7.5}Annexe 5 -- Synthèse des choix logiciels retenus}{23}{section.7.5}%
