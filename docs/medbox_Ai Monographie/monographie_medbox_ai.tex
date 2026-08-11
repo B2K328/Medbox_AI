@@ -78,6 +78,7 @@
             \nomEtudiant
         \end{center}
     \end{minipage}
+
     \vfill
     {\large \anneeUniv \par}
 \end{titlepage}
@@ -86,7 +87,7 @@
 \chapter*{Résumé}
 \addcontentsline{toc}{chapter}{Résumé}
 
-Ce projet de monographie s'inscrit dans le cadre de l'initiation à la démarche scientifique et à l'ingénierie embarquée au sein de la Faculté des Sciences Informatiques. Il porte sur la conception d'un boîtier médical autonome, nommé MedBox AI, capable de mesurer automatiquement plusieurs constantes vitales d'un patient et de proposer localement un diagnostic parmi dix-neuf profils physiologiques et pathologiques, à l'aide d'un modèle d'intelligence artificielle embarqué sur un microcontrôleur. L'approche suivie combine la constitution d'un jeu de données médicales, l'entraînement d'un réseau de neurones de classification, la conversion de ce modèle pour une exécution locale sur microcontrôleur, ainsi que la conception d'un système électronique intégrant plusieurs capteurs biométriques et un module d'identification par carte à puce sans contact. Les résultats obtenus démontrent la faisabilité d'un diagnostic médical préliminaire entièrement autonome et sans connexion réseau, tout en révélant plusieurs limites techniques inhérentes à un prototype construit avec des composants grand public. Ce travail illustre ainsi la capacité de l'étudiant à mobiliser des compétences pluridisciplinaires, allant de l'intelligence artificielle à l'électronique embarquée, pour concevoir un système fonctionnel répondant à une problématique concrète.
+Ce projet de monographie s'inscrit dans le cadre de l'initiation à la démarche scientifique et à l'ingénierie embarquée au sein de la Faculté des Sciences Informatiques. Il porte sur la conception d'un système médical embarqué complet, nommé MedBox AI, capable de mesurer automatiquement plusieurs constantes vitales d'un patient et de proposer localement un diagnostic parmi dix-neuf profils physiologiques et pathologiques, à l'aide d'un modèle d'intelligence artificielle embarqué sur un microcontrôleur. L'approche suivie combine la constitution d'un jeu de données médicales, l'entraînement d'un réseau de neurones de classification, la conversion de ce modèle pour une exécution locale sur microcontrôleur, la conception d'un système électronique intégrant plusieurs capteurs biométriques et un module d'identification par carte à puce sans contact, ainsi que le développement d'une chaîne logicielle complémentaire assurant la remontée opportuniste des résultats vers une plateforme web de suivi. Les résultats obtenus démontrent la faisabilité d'un diagnostic médical préliminaire entièrement autonome et sans connexion réseau, complété par un historique consultable, tout en révélant plusieurs limites techniques inhérentes à un prototype construit avec des composants grand public. Ce travail illustre ainsi la capacité de l'étudiant à mobiliser des compétences pluridisciplinaires, allant de l'intelligence artificielle à l'électronique embarquée en passant par le développement web, pour concevoir un système fonctionnel répondant à une problématique concrète.
 
 % ===================== SOMMAIRE =====================
 \tableofcontents
@@ -149,6 +150,14 @@ Ce document est structuré en cinq chapitres principaux. Le premier chapitre, \t
 
 \textbf{Communication en champ proche (NFC).} Technologie de communication sans fil à très courte portée, utilisée dans ce projet pour lire l'âge d'un patient stocké sur un badge, via un module dédié.
 
+\textbf{Communication série.} Mode de transmission de données caractère par caractère sur une liaison filaire (ici, le câble USB reliant le microcontrôleur à un ordinateur), utilisé dans ce projet pour faire remonter les résultats de diagnostic vers une base de données, sans recourir à une connexion réseau.
+
+\textbf{Architecture client-serveur et pages dynamiques (PHP).} Modèle dans lequel un serveur génère du contenu (ici des pages web) à la demande, en interrogeant une base de données, avant de l'envoyer au navigateur du client. Contrairement à une page statique, une page dynamique affiche toujours des données à jour.
+
+\textbf{Opérations CRUD.} Acronyme désignant les quatre opérations fondamentales de manipulation de données dans une application : création (\textit{Create}), lecture (\textit{Read}), mise à jour (\textit{Update}) et suppression (\textit{Delete}). Ce modèle structure la conception de la plateforme web du projet.
+
+\textbf{JSON (\textit{JavaScript Object Notation}).} Format de données textuel léger, utilisé pour transmettre des informations structurées entre un serveur (PHP) et un script exécuté dans le navigateur (JavaScript).
+
 \section{Présentation des outils ou technologies utilisés}
 
 \begin{itemize}
@@ -161,6 +170,11 @@ Ce document est structuré en cinq chapitres principaux. Le premier chapitre, \t
     \item \textbf{TensorFlow Lite for Microcontrollers} (via les bibliothèques \texttt{tflm\_esp32} et \texttt{eloquent\_tinyml}) : cadriciel permettant d'exécuter le modèle d'intelligence artificielle quantifié directement sur l'ESP32.
     \item \textbf{Arduino IDE / C++} : environnement de développement utilisé pour écrire, compiler et téléverser le firmware embarqué sur l'ESP32.
     \item \textbf{Microsoft Excel} : utilisé pour la constitution et l'organisation du jeu de données de 9500 échantillons ayant servi à l'entraînement du modèle.
+    \item \textbf{Python (bibliothèques pyserial et pymysql)} : utilisé pour développer le programme relais (« pont ») assurant la lecture du port série de l'ESP32 et l'enregistrement des mesures dans la base de données.
+    \item \textbf{MySQL} : système de gestion de base de données relationnelle utilisé pour stocker de manière persistante les patients et leurs mesures successives.
+    \item \textbf{PHP} : langage de programmation côté serveur utilisé pour développer les quatre pages de la plateforme web (tableau de bord, fiche patient, liste des patients, file de finalisation), en générant du HTML à jour à chaque consultation.
+    \item \textbf{Chart.js (bibliothèque JavaScript, hébergée localement)} : utilisée pour dessiner les courbes d'évolution des constantes vitales d'un patient dans son historique, sans nécessiter de connexion internet.
+    \item \textbf{HTML/CSS} : utilisés pour la structure et la mise en forme visuelle de la plateforme web, avec une direction graphique inspirée des interfaces de dispositifs médicaux.
 \end{itemize}
 
 % ===================== CHAPITRE 3 : REALISATION DU PROJET =====================
@@ -173,11 +187,22 @@ Le système devait répondre aux besoins fonctionnels suivants :
     \item Mesurer automatiquement, sans intervention d'un professionnel de santé, quatre grandeurs physiologiques : âge, fréquence cardiaque, saturation en oxygène et température corporelle.
     \item Traiter ces données localement pour produire un diagnostic parmi dix-neuf profils possibles, sans dépendre d'une connexion internet.
     \item Afficher un résultat clair et lisible à l'utilisateur.
+    \item Conserver un historique des mesures de chaque patient, consultable ultérieurement, afin de permettre un suivi dans le temps plutôt qu'une simple mesure ponctuelle.
 \end{itemize}
 
 Ces besoins fonctionnels s'accompagnaient de contraintes non fonctionnelles fortes, propres à l'embarqué : mémoire vive très limitée (quelques centaines de kilo-octets), nécessité d'un fonctionnement autonome (sans serveur), et budget matériel restreint imposant l'usage de capteurs grand public plutôt que de dispositifs médicaux certifiés.
 
 \section{Architecture de la solution}
+Le système MedBox AI repose sur une architecture globale en trois niveaux : le dispositif embarqué, qui réalise le diagnostic de manière autonome ; un programme relais, qui fait remonter les mesures vers une base de données lorsque les conditions le permettent ; et une plateforme web, qui permet de consulter l'historique des patients. Cette organisation garantit qu'aucun de ces trois niveaux n'est indispensable au fonctionnement des autres : le diagnostic reste possible même sans remontée de données, et la remontée reste possible même sans consultation web immédiate.
+
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=0.7\textwidth]{schema_architecture.png}
+    \caption{Schéma de l'architecture globale de MedBox AI (dispositif, pont série, base de données, plateforme web)}
+    \label{fig:architecture}
+\end{figure}
+
+\subsection*{Le dispositif embarqué}
 Le boîtier MedBox AI repose sur un microcontrôleur ESP32 connecté en bus I2C à l'ensemble des périphériques. L'architecture logicielle est organisée en modules indépendants, chacun responsable d'un sous-système :
 
 \begin{itemize}
@@ -198,12 +223,24 @@ Le fonctionnement global est piloté par une \textbf{machine à états finis}, q
     \item \texttt{STATE\_SHOW\_RESULT} : affichage du diagnostic pendant dix secondes, avant réinitialisation pour un nouveau patient.
 \end{enumerate}
 
-\begin{figure}[H]
-    \centering
-    % \includegraphics[width=0.7\textwidth]{schema_architecture.png}
-    \caption{Schéma de l'architecture matérielle et logicielle de MedBox AI}
-    \label{fig:architecture}
-\end{figure}
+\subsection*{La remontée des données par liaison série}
+Le dispositif ne communique jamais directement avec la base de données. La remontée des mesures s'effectue par liaison série (le câble USB reliant déjà le dispositif à un ordinateur), plutôt que par le réseau WiFi, pour rester cohérente avec l'objectif d'autonomie hors ligne du dispositif : aucune configuration réseau n'est nécessaire, et les données transmises restent lisibles directement pour faciliter le débogage.
+
+Un programme relais, appelé « pont » et écrit en Python, écoute en continu le port série. À chaque mesure, le dispositif imprime une ligne de texte au format suivant, les champs étant séparés par des points-virgules et préfixés par le mot-clé \texttt{MEDBOX;} :
+\begin{center}
+\texttt{MEDBOX;uid;age;bpm;spo2;temperature;confiance;classe}
+\end{center}
+
+Ce préfixe permet au pont de distinguer les lignes de mesure des nombreux autres messages que le dispositif imprime par ailleurs (démarrage, étapes de mesure) : seules les lignes commençant exactement par \texttt{MEDBOX;} sont traitées, les autres étant ignorées.
+
+Cette remontée est qualifiée d'\textbf{opportuniste} : elle n'a lieu que si un câble est branché et qu'un pont est actif à l'écoute, mais le diagnostic réalisé par le dispositif n'en dépend jamais. La base de données ne joue ainsi qu'un rôle de mémoire optionnelle, jamais celui d'un maillon indispensable au fonctionnement médical du système.
+
+\subsection*{La plateforme web de suivi}
+Une plateforme web, développée en PHP et connectée à une base de données MySQL, permet de consulter l'historique des mesures. Elle se compose de quatre pages couvrant les opérations CRUD (création, lecture, mise à jour, suppression) : un tableau de bord (statistiques et dernières mesures), une fiche patient (historique et courbes d'évolution), une liste des patients (avec suppression), et une file de finalisation (complétion des patients créés automatiquement à partir d'un badge inconnu). La création d'un patient n'est pas assurée par une page web, mais déclenchée automatiquement dès la réception d'une mesure associée à un badge inconnu.
+
+Les courbes d'évolution des constantes vitales sont dessinées avec la bibliothèque JavaScript Chart.js, hébergée localement sur le serveur pour un fonctionnement hors ligne. Les données, lues en base par PHP, sont transmises au script JavaScript via la fonction \texttt{json\_encode}, qui convertit un tableau PHP en un format directement exploitable par Chart.js. Un contrôle affiche les courbes uniquement à partir de deux mesures disponibles, une mesure isolée ne pouvant traduire aucune tendance.
+
+Le style visuel de la plateforme s'inspire des interfaces de dispositifs médicaux (fond clair, palette bleu profond et sarcelle, cartes à coins arrondis), avec un codage couleur à quatre niveaux (normal, alerte, sévère, critique) permettant de repérer une situation grave en un coup d'œil — une information que l'écran OLED du dispositif, plus contraint, ne pouvait pas transmettre.
 
 \section{Étapes de mise en œuvre}
 
@@ -219,6 +256,10 @@ Un jeu de données synthétique de 9500 échantillons a ensuite été constitué
 \paragraph{Conversion pour l'embarqué.} Le modèle entraîné a ensuite été converti au format TensorFlow Lite avec quantification par défaut, afin de réduire sa taille et d'accélérer son exécution sur microcontrôleur. Le fichier obtenu a été transformé en tableau d'octets C++, directement intégrable dans le firmware. Sur l'ESP32, l'inférence est exécutée avec une zone mémoire de seulement 8~kilo-octets de SRAM, illustrant la légèreté du modèle final.
 
 \paragraph{Développement du firmware embarqué.} Le firmware a été développé en C++ sous Arduino IDE, avec la structure modulaire décrite en section 3.2. Un mode de simulation a été ajouté à deux niveaux du système : un mode de simulation NFC (badge simulé par une valeur d'âge fixe dans le code) et un mode de saisie manuelle des constantes vitales via le moniteur série, permettant de tester les dix-neuf classes de sortie du modèle sans avoir à reproduire physiquement chaque état pathologique avec les capteurs.
+
+\paragraph{Développement du pont série et de la base de données.} Un programme relais Python, exploitant les bibliothèques \texttt{pyserial} et \texttt{pymysql}, a été développé pour écouter le port série, filtrer les lignes de mesure valides et les enregistrer dans une base de données MySQL. Une logique d'enrôlement automatique des patients a été implémentée : un badge inconnu déclenche la création d'un nouveau patient au statut « en attente de finalisation », complété ultérieurement via la plateforme web.
+
+\paragraph{Développement de la plateforme web.} Les quatre pages de la plateforme (tableau de bord, fiche patient, liste des patients, file de finalisation) ont été développées en PHP, avec une interrogation directe de la base MySQL à chaque consultation. L'intégration de la bibliothèque Chart.js, associée à la fonction PHP \texttt{json\_encode} pour transmettre les données au script JavaScript, a permis d'afficher les courbes d'évolution des constantes vitales de chaque patient.
 
 \subsection*{Phase de tests}
 Les tests ont été menés à deux niveaux. D'une part, le modèle a été évalué automatiquement sur l'ensemble de test Python (1900 échantillons non vus pendant l'entraînement). D'autre part, le prototype matériel complet a été testé de manière itérative, ce qui a permis de mettre en évidence plusieurs dysfonctionnements (détaillés au chapitre 4) et d'orienter les corrections successives apportées au firmware, notamment sur la fiabilité de la mesure cardiaque et sur la lecture des badges NFC.
@@ -239,6 +280,9 @@ L'analyse de la matrice de confusion (figure~\ref{fig:confusion}) montre que la 
 
 \subsection*{Résultats du prototype matériel}
 Une fois le firmware corrigé (voir chapitre 4), le boîtier fonctionne de bout en bout : lecture d'un badge NFC, mesure de la température par calibration empirique, mesure de la fréquence cardiaque et de la saturation en oxygène par cycles successifs, puis inférence et affichage du diagnostic. La calibration du capteur de température, réalisée à partir de huit mesures comparatives avec un thermomètre de référence, a permis de déterminer un offset moyen de correction de +3,98~°C (écart-type des écarts individuels de 0,83~°C), rendant les températures transmises au modèle cohérentes avec la température corporelle réelle. Concernant la mesure cardiaque, des essais répétés sur un même sujet au repos ont révélé une variabilité significative des valeurs retenues (de 83 à 166 battements par minute selon les essais), reflétant les limites du capteur bas coût utilisé plutôt qu'un défaut de la chaîne logicielle de traitement.
+
+\subsection*{Résultats de la remontée de données et de la plateforme web}
+La chaîne complète de remontée des données a été validée : chaque diagnostic produit par le dispositif est imprimé sur le port série au format attendu, capté par le pont Python, puis enregistré dans la base MySQL avec application correcte de la logique d'enrôlement (rattachement à un patient existant ou création automatique d'un nouveau patient pour un badge inconnu). La plateforme web permet de consulter cet historique : le tableau de bord affiche les dernières mesures, la fiche patient présente les courbes d'évolution des constantes vitales dès que deux mesures ou plus sont disponibles, et le codage couleur à quatre niveaux de gravité permet une lecture rapide de la situation d'un patient. Le caractère opportuniste de cette remontée a également été vérifié : le dispositif continue de produire des diagnostics normalement lorsque le pont n'est pas actif, confirmant que la base de données reste une fonctionnalité complémentaire et non une dépendance du système de diagnostic.
 
 % ===================== CHAPITRE 4 : DIFFICULTES ET LIMITES =====================
 \chapter{Difficultés rencontrées et limites}
@@ -277,13 +321,14 @@ Plusieurs dysfonctionnements techniques ont été identifiés et corrigés au co
 \chapter{Conclusion générale}
 
 \section{Récapitulatif}
-Ce projet a porté sur la conception d'un boîtier médical embarqué autonome, MedBox AI, combinant capteurs biométriques, identification par badge NFC et intelligence artificielle embarquée. La démarche suivie a consisté à constituer un jeu de données de 9500 échantillons répartis en dix-neuf profils physiologiques et pathologiques, à entraîner un modèle de classification atteignant 95,58~\% de précision, puis à convertir et intégrer ce modèle sur un microcontrôleur ESP32 via TensorFlow Lite Micro. Le firmware embarqué, organisé autour d'une machine à états, a été développé, testé et corrigé de manière itérative pour aboutir à un prototype fonctionnel.
+Ce projet a porté sur la conception d'un système médical embarqué complet, MedBox AI, combinant capteurs biométriques, identification par badge NFC, intelligence artificielle embarquée, remontée de données par liaison série et plateforme web de suivi. La démarche suivie a consisté à constituer un jeu de données de 9500 échantillons répartis en dix-neuf profils physiologiques et pathologiques, à entraîner un modèle de classification atteignant 95,58~\% de précision, puis à convertir et intégrer ce modèle sur un microcontrôleur ESP32 via TensorFlow Lite Micro. Le firmware embarqué, organisé autour d'une machine à états, a été développé, testé et corrigé de manière itérative pour aboutir à un prototype fonctionnel. Ce dispositif a ensuite été complété par un programme relais assurant l'enregistrement opportuniste des mesures dans une base de données, ainsi que par une plateforme web permettant de consulter l'historique et l'évolution de chaque patient.
 
 \section{Apports du projet}
-Ce travail a permis à l'étudiant de mobiliser et de développer des compétences pluridisciplinaires : préparation et exploitation d'un jeu de données, entraînement et évaluation d'un modèle d'apprentissage automatique, conversion de modèles pour l'embarqué, programmation en C++ sur microcontrôleur, intégration de capteurs électroniques hétérogènes sur un même bus de communication, et démarche rigoureuse de diagnostic et de correction de dysfonctionnements matériels et logiciels. Le projet a également permis d'appréhender concrètement l'écart, souvent sous-estimé, entre un modèle d'intelligence artificielle performant en simulation et son comportement une fois confronté aux contraintes réelles d'un système embarqué et de capteurs physiques imparfaits.
+Ce travail a permis à l'étudiant de mobiliser et de développer des compétences pluridisciplinaires : préparation et exploitation d'un jeu de données, entraînement et évaluation d'un modèle d'apprentissage automatique, conversion de modèles pour l'embarqué, programmation en C++ sur microcontrôleur, intégration de capteurs électroniques hétérogènes sur un même bus de communication, démarche rigoureuse de diagnostic et de correction de dysfonctionnements matériels et logiciels, ainsi que conception d'une chaîne logicielle complète allant du capteur jusqu'à une interface web de suivi (communication série, base de données relationnelle, développement web côté serveur et visualisation de données). Le projet a également permis d'appréhender concrètement l'écart, souvent sous-estimé, entre un modèle d'intelligence artificielle performant en simulation et son comportement une fois confronté aux contraintes réelles d'un système embarqué et de capteurs physiques imparfaits.
 
 \section{Perspectives}
-Plusieurs perspectives d'amélioration se dégagent de ce travail. L'enrichissement du jeu de données avec des mesures réelles, et non uniquement synthétiques, permettrait de renforcer la robustesse du modèle en conditions réelles. Le remplacement ou la réécriture de l'algorithme de traitement du signal cardiaque permettrait de dépasser la contrainte actuelle de la fenêtre de capture. Une calibration du capteur de température sur un échantillon plus large de sujets renforcerait la fiabilité de cette mesure. Enfin, le développement d'une application mobile ou d'une historisation des résultats, ainsi qu'une validation par du personnel médical qualifié, constitueraient des étapes naturelles vers un dispositif plus abouti, dans la continuité d'un futur mémoire ou projet de fin de cycle.
+Plusieurs perspectives d'amélioration se dégagent de ce travail. L'enrichissement du jeu de données avec des mesures réelles, et non uniquement synthétiques, permettrait de renforcer la robustesse du modèle en conditions réelles. Le remplacement ou la réécriture de l'algorithme de traitement du signal cardiaque permettrait de dépasser la contrainte actuelle de la fenêtre de capture. Une calibration du capteur de température sur un échantillon plus large de sujets renforcerait la fiabilité de cette mesure. La remontée de données actuellement filaire (liaison série) pourrait évoluer vers une transmission WiFi optionnelle, tout en conservant le principe d'un diagnostic qui ne dépend jamais du réseau. Enfin, le développement d'une application mobile pour le personnel soignant, ainsi qu'une validation clinique par du personnel médical qualifié, constitueraient des étapes naturelles vers un dispositif plus abouti, dans la continuité d'un futur mémoire ou projet de fin de cycle.
+
 
 % ===================== CHAPITRE 6 : BIBLIOGRAPHIE ET WEBOGRAPHIE =====================
 \chapter{Bibliographie et Webographie}
@@ -391,7 +436,47 @@ Idx & Classe & Idx & Classe \\
 \caption{Correspondance entre les indices de sortie du modèle et les 19 classes}
 \end{table}
 
-\section{Annexe 5 -- Synthèse des choix logiciels retenus}
+\section{Annexe 5 -- Format du protocole série et exemple de ligne transmise}
+\begin{lstlisting}[language=C++, basicstyle=\ttfamily\footnotesize]
+// Format imprime par le dispositif a chaque mesure :
+// MEDBOX;uid;age;bpm;spo2;temperature;confiance;classe
+
+// Exemple reel :
+// MEDBOX;A3F2C19B;8;95.0;98.0;36.38;0.9234;1
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python, caption={Boucle d'ecoute simplifiee du pont Python}]
+# ouvrir le port serie et la connexion a la base
+while True:
+    ligne = port_serie.readline().decode().strip()
+    if ligne.startswith("MEDBOX;"):
+        champs = ligne.split(";")
+        uid, age, bpm, spo2, temp, confiance, classe = champs[1:]
+        enregistrer_mesure(uid, age, bpm, spo2, temp, confiance, classe)
+    # sinon, la ligne est ignoree (message de debogage du dispositif)
+\end{lstlisting}
+
+\section{Annexe 6 -- Intégration Chart.js (PHP vers JavaScript)}
+\begin{lstlisting}[language=PHP]
+// Cote PHP : lecture des mesures depuis la base, puis encodage JSON
+$serieBpm = [78, 95, 110];
+$jsonBpm = json_encode($serieBpm); // "[78,95,110]"
+\end{lstlisting}
+\begin{lstlisting}[language=Java, caption={Creation de la courbe cote JavaScript}]
+new Chart(document.getElementById('chartBpm'), {
+    type: 'line',
+    data: {
+        labels: labels,
+        datasets: [{
+            data: dataBpm,
+            borderColor: '#2E7D8E',
+            fill: true
+        }]
+    }
+});
+\end{lstlisting}
+
+\section{Annexe 7 -- Synthèse des choix logiciels retenus}
 \begin{table}[H]
 \centering
 \small
@@ -404,6 +489,9 @@ Mesure en plusieurs cycles + médiane & La bibliothèque de calcul du rythme car
 Mode de saisie manuelle des constantes vitales & Permet de valider les dix-neuf classes de sortie du modèle indépendamment de la fiabilité des capteurs physiques. \\
 Firmware d'écriture NFC séparé & Évite d'alourdir le firmware embarqué final avec du code de préparation de badges non nécessaire en usage courant. \\
 Filtrage par plage physiologique plausible & Empêche qu'une valeur aberrante isolée ne pollue le résultat final, sans nécessiter d'algorithme de traitement du signal plus complexe. \\
+Liaison série plutôt que WiFi & Cohérence avec l'objectif d'autonomie hors ligne du dispositif ; absence de configuration réseau ; débogage plus simple. \\
+Remontée opportuniste des données & Garantit que le diagnostic ne dépend jamais de la disponibilité de la base de données ou du pont. \\
+Chart.js hébergé localement & Permet à la plateforme web de fonctionner sans connexion internet, cohérent avec le reste du système. \\
 \bottomrule
 \end{tabular}
 \caption{Choix logiciels retenus et justifications}
